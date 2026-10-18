@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SomaiyaSat · KJS-SRS-01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div id="progress"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"><i></i></div>
+<div id="tip" role="tooltip"></div>
+
+<header class="top">
+  <div class="wrap bar-row">
+    <a class="brand" href="#top" data-magnetic>SomaiyaSat<span>KJS-SRS-01</span></a>
+    <nav>
+      <a href="#simulator">Simulator</a>
+      <a href="#day">One day</a>
+      <a href="#mission">Mission</a>
+      <a href="#modes">Modes</a>
+      <a href="#safety">Safety</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">K J Somaiya · Mini project</p>
+      <h1>A satellite that chooses what to send.</h1>
+      <p class="lead">SomaiyaSat is a PocketQube with a few minutes over the ground each day. A small onboard model decides what goes down first.</p>
+      <div class="cta">
+        <a class="btn primary" href="#simulator" data-magnetic>Try a pass</a>
+        <a class="btn" href="#day" data-magnetic>See a full day</a>
+      </div>
+      <dl class="facts">
+        <div><dt>5 cm</dt><dd>cube size</dd></div>
+        <div><dt>&lt; 1 W</dt><dd>average power</dd></div>
+        <div><dt>4</dt><dd>radio modes</dd></div>
+        <div><dt>1</dt><dd>rule never broken</dd></div>
+      </dl>
+    </div>
+    <figure class="frame" data-cursor="Move">
+      <canvas id="orbit" aria-label="Animation of a satellite orbiting Earth past a ground station"></canvas>
+      <figcaption><span>Click to move the ground station</span><span id="orbitState" class="state">Out of range</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="simulator">
+  <div class="wrap">
+    <p class="label">01 / Simulator</p>
+    <h2>Try a pass</h2>
+    <div class="sim">
+      <div class="panel controls">
+        <label for="link">Link quality <output id="linkO"></output></label>
+        <input id="link" type="range" min="5" max="100" value="75" data-cursor="Drag">
+        <label for="batt">Battery <output id="battO"></output></label>
+        <input id="batt" type="range" min="5" max="100" value="80" data-cursor="Drag">
+        <label for="mins">Pass length <output id="minsO"></output></label>
+        <input id="mins" type="range" min="2" max="12" value="8" data-cursor="Drag">
+        <label class="check"><input type="checkbox" id="ecl"><span>In eclipse</span></label>
+        <label class="check"><input type="checkbox" id="fault"><span>Faulty AI output</span></label>
+        <div class="presets">
+          <button data-p="75,80,8,0">Good pass</button>
+          <button data-p="30,70,5,0">Weak signal</button>
+          <button data-p="70,22,8,1">Low battery</button>
+          <button data-p="92,95,12,0">Best case</button>
+        </div>
+      </div>
+      <div class="panel result" aria-live="polite">
+        <div class="result-head">
+          <span id="status" class="pill"></span>
+          <span id="reason" class="muted"></span>
+        </div>
+        <div class="timeline" id="timeline">
+          {% for m in modes %}<div class="seg {{ m.id }}" data-id="{{ m.id }}"></div>{% endfor %}
+        </div>
+        <div class="axis"><span>Pass start</span><span id="endLbl"></span></div>
+        <div class="order" id="order"></div>
+        <div class="meter" id="meter"></div>
+        <ul class="log" id="log"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="day">
+  <div class="wrap">
+    <p class="label">02 / One day</p>
+    <div class="row-head">
+      <h2>Six passes</h2>
+      <button id="newDay" data-magnetic>New day</button>
+    </div>
+    <div class="panel">
+      <div class="legend">
+        {% for m in modes %}<span><i class="dot {{ m.id }}"></i>{{ m.name }}</span>{% endfor %}
+        <span class="muted" id="dayTotal"></span>
+      </div>
+      <div class="chart" id="chart"></div>
+      <p class="muted small">Tap a pass to load it into the simulator.</p>
+    </div>
+  </div>
+</section>
+
+<section id="mission">
+  <div class="wrap">
+    <p class="label">03 / Mission</p>
+    <h2>From launch to downlink</h2>
+    <div class="stepper" id="stepper"><div class="track"><div class="fill" id="fill"></div></div></div>
+    <div class="panel step" id="stepPanel">
+      <span class="stepnum" id="stN"></span>
+      <div><h3 id="stT"></h3><p id="stP"></p></div>
+      <div class="stepnav"><button id="prev">Back</button><button id="next">Next</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="modes">
+  <div class="wrap">
+    <p class="label">04 / Modes</p>
+    <h2>One radio, four modes</h2>
+    <div class="modes">
+      {% for m in modes %}
+      <details class="mode" data-cursor="Open">
+        <summary>
+          <span class="num">0{{ loop.index }}</span>
+          <span class="mname"><i class="dot {{ m.id }}"></i>{{ m.name }}</span>
+          <span class="mfull">{{ m.full }}</span>
+          <span class="mcost">{{ m.cost }}</span>
+        </summary>
+        <div class="mbody">
+          <p>{{ m.carries }}</p>
+          <dl>
+            <div><dt>Needs link</dt><dd>{{ m.min_link }}%+</dd></div>
+            <div><dt>Battery</dt><dd>{{ m.power }}%</dd></div>
+            <div><dt>Per pass</dt><dd>{{ m.kb }} kB</dd></div>
+          </dl>
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="safety">
+  <div class="wrap">
+    <p class="label">05 / Safety</p>
+    <h2>Rules that stay on</h2>
+    <div class="rules">
+      <div><h3>Watchdog</h3><p>A wrong AI order is replaced by a fixed one.</p></div>
+      <div><h3>Override</h3><p>Ground commands beat the scheduler.</p></div>
+      <div><h3>Logged</h3><p>Every choice is saved with its reason.</p></div>
+      <div><h3>Licensed</h3><p>Radio and launch follow ITU and national rules.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Source: AI Use Case KJS-SRS-01, K J Somaiya Institute of Technology and K J Somaiya School of Engineering. Faculty owners: Dr. Umesh Shinde and Dr. Shailesh Nikam. Collaborating organization: ReOrbit, Finland.</div>
+</footer>
+
+<script id="modes-data" type="application/json">{{ modes|tojson }}</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
