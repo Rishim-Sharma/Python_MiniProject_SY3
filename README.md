@@ -13,7 +13,7 @@ A watchdog rejects any order that does not put health data first.
     pip install -r requirements.txt
     python app.py
 
-Open http://127.0.0.1:5000
+Open http://127.0.0.1:5000 (if cloning the repo) OR open https://python-mini-project-sy-3.vercel.app/
 
 ## Files
 
