@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request
 
 from scheduler import FIXED_ORDER, MODES, plan_pass, simulate_day
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder = "public/static", static_url_path = "/static")
 
 
 def number(name, default, low, high):
